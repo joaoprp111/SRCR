@@ -22,41 +22,77 @@
 % Nome, Data_Nasc, Email, Telefone, Morada,
 % Profissão, [Doenças_Crónicas], CentroSaúde -> {V,F}
 
-utente(1,123456789,Pedro,19_02_1934,email1,253123451,Almada,Bombeiro,[],1).
-utente(2,123123123,Manuel,13_03_1945,email2,253429351,Barcelos,Eng_Civil,[],1).
-utente(3,523183123,Carla,02_12_1977,email3,253459320,Coimbra,Jornalista,[],2).
+utente(1,123456789,pedro,(19,02,1934),email1,253123451,almada,bombeiro,[],1).
+utente(2,123123123,manuel,(13,03,1945),email2,253429351,barcelos,eng_civil,[],1).
+utente(3,523183123,carla,(02,12,1977),email3,253459320,coimbra,jornalista,[],2).
+utente(4,256331909,roberto,(21,01,1955),email4,253919559,guimarães,eng_informático,[hipertensão],2).
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado centro_saúde: Idcentro, Nome, Morada, Telefone, Email -> {V,F}
 
-centro_saúde(1,centro_saude_1,Viana,253456712,emailC1).
-centro_saúde(2,centro_saude_2,Viseu,253921733,emailC2).
+centro_saúde(1,centro_saude_1,viana,253456712,emailC1).
+centro_saúde(2,centro_saude_2,viseu,253921733,emailC2).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado staff: Idstaff, Idcentro, Nome, email -> {V,F}
 
-staff(1,2,Jose,emailS1).
-staff(2,1,Joao,emailS2).
-staff(3,1,Maria,emailS3).
-staff(4,1,Renata,emailS4).
-staff(5,2,Marta,emailS5).
+staff(1,2,jose,emailS1).
+staff(2,1,joao,emailS2).
+staff(3,1,maria,emailS3).
+staff(4,1,renata,emailS4).
+staff(5,2,marta,emailS5).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado vacinação_Covid:  Staf, utente, Data, Vacina, Toma -> {V,F}
 
-vacinação_Covid(4,3,23_03_2021,Astrazeneca,1).
+vacinacao_Covid(4,3,(23,03,2021),astrazeneca,1).
+vacinacao_Covid(5,3,(06,04,2021),astrazeneca,2).
+vacinacao_Covid(2,1,(01,04,2021),astrazeneca,1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Inserir predicados
 
-inserir(P) :- assert(P).
-inserir(P) :- retract(P), !, fail.
+inserir(Termo) :- assert(Termo).
+inserir(Termo) :- retract(Termo), !, fail.
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Invariantes estruturais: nao permitir a insercao de conhecimento
+%                         repetido
+
++utente(Id,Niss,Nome,Data,Email,Telefone,Morada,Prof,Doencas,IdCS) ::
+       (solucoes((Id,Niss,Nome,Data,Email,Telefone,Morada,Prof,Doencas,IdCS),
+        (utente(Id,Niss,Nome,Data,Email,Telefone,Morada,Prof,Doencas,IdCS)),S),
+        comprimento(S,N),
+        N == 1).
+
++centro_saúde(IdCS,Nome,Morada,Telefone,Email) ::
+              (solucoes((IdCS,Nome,Morada,Telefone,Email),
+               centro_saúde(IdCS,Nome,Morada,Telefone,Email),S),
+               comprimento(S,N),
+               N == 1).
+
++staff(Id,IdUtente,Nome,Email) ::
+             (solucoes((Id,IdUtente,Nome,Email),
+             staff(Id,IdUtente,Nome,Email),S),
+             comprimento(S,N),
+             N == 1).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Invariantes referenciais: nao permite relacionar uma entidade a outra
+%                           que nao exista (aquando da insercao)
+
++utente(_,_,_,_,_,_,_,_,_,IdCS) ::
+       (solucoes(IdsCS,
+        (centro_saúde(IdsCS,_,_,_,_)),S),
+        pertence(IdCS,S)).
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado que permite a evolucao do conhecimento
 
-evolucao( Termo ) :- solucoes(Invariante, +Termo::Invariante,Lista),
-                     insercao(Termo),
+evolucao( Termo ) :- solucoes(Invariante,+Termo::Invariante,Lista),
+                     inserir(Termo),
                      teste(Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -67,4 +103,50 @@ nao_vacinada(X):- not(vacinada(X)).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Identificar pessoas vacinadas: Utente -> {V,F}
 
-vacinada(X):- vacinação_Covid(_,X,_,_,_).
+vacinada(X):- vacinacao_Covid(_,X,_,_,_).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Data atual
+date(Day,Month,Year) :-
+    get_time(Stamp),
+    stamp_date_time(Stamp, DateTime, local),
+    date_time_value(year, DateTime, Year),
+    date_time_value(month, DateTime, Month),
+    date_time_value(day, DateTime, Day).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Identificar pessoas não vacinadas e candidatas a serem vacinadas: Utente -> {V,F}
+idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M<Y.
+idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M==Y, D=<X.
+idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M==Y, D>X.
+idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M>=Y.
+
+candidata(X):- nao_vacinada(X), utente(X,_,_,_,_,_,_,_,S,_), length(S,N), N>=1.
+
+candidata(X):- nao_vacinada(X), utente(X,_,_,(D,M,A),_,_,_,_,_,_), idade((D,M,A),R), R>=65.
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Identificar pessoas que falta a segunda toma: Utente -> {V,F}
+falta_2toma(X):- not(nao_falta_2toma).
+nao_falta_2toma(X):- vacinacao_Covid(_,X,_,_,Y), Y==2.
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Predicado solucoes
+solucoes(X,P,S) :- findall(X,P,S).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Comprimento da Lista
+comprimento(S,N) :- length(S,N)
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Predicado teste
+teste([]).
+teste([R|LR]) :- R, teste(LR).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Pertencer a uma Lista
+pertence(H,[H|_]).
+pertence(X,[H|T]) :-
+    X \= H,
+    pertence(X,T).

@@ -47,11 +47,17 @@ staff(5,2,Marta,emailS5).
 vacinação_Covid(4,3,23_03_2021,Astrazeneca,1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Inserir ou remover predicados
+% Inserir predicados
 
 inserir(P) :- assert(P).
-remover(P) :- retract(P).
+inserir(P) :- retract(P), !, fail.
 
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Extensao do predicado que permite a evolucao do conhecimento
+
+evolucao( Termo ) :- solucoes(Invariante, +Termo::Invariante,Lista),
+                     insercao(Termo),
+                     teste(Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Identificar pessoas vacinadas: Utente -> {V,F}

@@ -51,3 +51,14 @@ vacinação_Covid(4,3,23_03_2021,Astrazeneca,1).
 
 inserir(P) :- assert(P).
 remover(P) :- retract(P).
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Identificar pessoas vacinadas: Utente -> {V,F}
+
+nao_vacinada(X):- not(vacinada(X)).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Identificar pessoas vacinadas: Utente -> {V,F}
+
+vacinada(X):- vacinação_Covid(_,X,_,_,_).

@@ -72,9 +72,9 @@ inserir(Termo) :- retract(Termo), !, fail.
                comprimento(S,N),
                N == 1).
 
-+staff(Id,IdUtente,Nome,Email) ::
-             (solucoes((Id,IdUtente,Nome,Email),
-             staff(Id,IdUtente,Nome,Email),S),
++staff(Id,IdCentro,Nome,Email) ::
+             (solucoes((Id,IdCentro,Nome,Email),
+             staff(Id,IdCentro,Nome,Email),S),
              comprimento(S,N),
              N == 1).
 
@@ -87,6 +87,19 @@ inserir(Termo) :- retract(Termo), !, fail.
         (centro_saúde(IdsCS,_,_,_,_)),S),
         pertence(IdCS,S)).
 
++staff(_,IdC,_,_) ::
+       (solucoes(IdsCS,
+       (centro_saúde(IdsCS,_,_,_,_)),S),
+        pertence(IdC,S)).
+
++vacinacao_Covid(Staff,Utente,_,_,_) ::
+        (solucoes(Staffs,
+        (staff(Staffs,_,_,_)),S),
+        solucoes(Utentes,
+        (utente(Utentes,_,_,_,_,_,_,_,_,_)),S1),
+        pertence(Staff,S),
+        pertence(Utente,S1)).
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado que permite a evolucao do conhecimento
@@ -95,8 +108,9 @@ evolucao( Termo ) :- solucoes(Invariante,+Termo::Invariante,Lista),
                      inserir(Termo),
                      teste(Lista).
 
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Identificar pessoas vacinadas: Utente -> {V,F}
+% Identificar pessoas não vacinadas: Utente -> {V,F}
 
 nao_vacinada(X):- not(vacinada(X)).
 
@@ -116,10 +130,10 @@ date(Day,Month,Year) :-
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Identificar pessoas não vacinadas e candidatas a serem vacinadas: Utente -> {V,F}
-idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M<Y.
+idade((_,M,A),I):- date(_,Y,Z), I is Z-A, M<Y.
 idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M==Y, D=<X.
 idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M==Y, D>X.
-idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M>=Y.
+idade((_,M,A),I):- date(_,Y,Z), I is Z-A-1, M>=Y.
 
 candidata(X):- nao_vacinada(X), utente(X,_,_,_,_,_,_,_,S,_), length(S,N), N>=1.
 
@@ -127,9 +141,16 @@ candidata(X):- nao_vacinada(X), utente(X,_,_,(D,M,A),_,_,_,_,_,_), idade((D,M,A)
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Identificar pessoas que falta a segunda toma: Utente -> {V,F}
-falta_2toma(X):- not(nao_falta_2toma).
+
+falta_2toma(_):- not(nao_falta_2toma).
 nao_falta_2toma(X):- vacinacao_Covid(_,X,_,_,Y), Y==2.
 
+retirar(X.[X|T],T).
+retirar(X,[H|T],[H|T1]):- retirar(X,T,T1).
+
+inserir(X,L,R):- retirar(X,R,L).
+
+pessoas_vacinadas_centro(Idcentro,L):- solucoes((Idu,_,Nome,_,_,_,_,_,_),(utente(Idu,Nss,Nome,Data,Email,Tel,Mor,Prof,Doencas,Idcentro),vacinacao_Covid(IdS,Idu,DataV,Vacina,T)),L).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado solucoes
@@ -137,7 +158,7 @@ solucoes(X,P,S) :- findall(X,P,S).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Comprimento da Lista
-comprimento(S,N) :- length(S,N)
+comprimento(S,N) :- length(S,N).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado teste

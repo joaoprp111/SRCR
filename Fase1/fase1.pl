@@ -145,16 +145,30 @@ candidata(X):- nao_vacinada(X), utente(X,_,_,(D,M,A),_,_,_,_,_,_), idade((D,M,A)
 falta_2toma(_):- not(nao_falta_2toma).
 nao_falta_2toma(X):- vacinacao_Covid(_,X,_,_,Y), Y==2.
 
-retirar(X.[X|T],T).
-retirar(X,[H|T],[H|T1]):- retirar(X,T,T1).
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Lista das pessoas vacinadas num determinado centro de saúde
 
-inserir(X,L,R):- retirar(X,R,L).
+pessoas_vacinadas_centro(Idcentro,L):- solucoesSRep((Idu,Nome),
+                                       (utente(Idu,Nss,Nome,Data,Email,Tel,Mor,Prof,Doencas,Idcentro),
+                                       vacinacao_Covid(IdS,Idu,DataV,Vacina,T)),
+                                       L).
 
-pessoas_vacinadas_centro(Idcentro,L):- solucoes((Idu,_,Nome,_,_,_,_,_,_),(utente(Idu,Nss,Nome,Data,Email,Tel,Mor,Prof,Doencas,Idcentro),vacinacao_Covid(IdS,Idu,DataV,Vacina,T)),L).
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Lista das diferentes vacinas dadas num determinado centro de saúde
+
+vacinas_centro(Idcentro,L):- solucoesSRep(Vacina,
+                             (vacinacao_Covid(IdS,Idu,DataV,Vacina,T),
+                             staff(Idstaff,Idcentro,Nome,Email)),
+                             L).
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado solucoes
 solucoes(X,P,S) :- findall(X,P,S).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Predicado solucoes sem repetiçoes
+solucoesSRep(X,Y,Z) :- setof(X,Y,Z). 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Comprimento da Lista

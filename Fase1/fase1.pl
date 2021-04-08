@@ -163,13 +163,15 @@ fase3(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata3(X)
 candidata1(Id):-
       utente(Id,_,_,_,_,_,_,P,_,_),
       profissoesFase1(Ps),
-      pertence(P,Ps),!.
+      pertence(P,Ps).
 candidata1(Id) :-
-      utente(Id,_,_,(D,M,A),_,_,_,_,Ds,_),
+      utente(Id,_,_,(D,M,A),_,_,_,P,Ds,_),
       idade((D,M,A),R),
       R >= 80,
       comprimento(Ds,N),
-      N >= 1.
+      N >= 1,
+      profissoesFase1(Ps),
+      nao(pertence(P,Ps)).
 
 candidata2(Id) :-
       utente(Id,_,_,(D,M,A),_,_,_,_,Ds,_),
@@ -327,6 +329,16 @@ vacinacao_completa(R) :- solucoesSRep((Idu,Nome),
                          (vacinacao_Covid(_,Idu,_,_,2),
                          utente(Idu,_,Nome,_,_,_,_,_,_,_)),
                          R).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Registar algo
+registar(P) :-
+    evolucao(P).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Mostrar Utentes
+mostrarRegistos(P) :-
+    listing(P).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Data atual

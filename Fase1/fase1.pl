@@ -14,8 +14,9 @@
 
 :- op( 900,xfy,'::' ).
 :- dynamic utente/10.
-:- dynamic centro_saúde/5.
+:- dynamic centro_saude/5.
 :- dynamic staff/4.
+:- dynamic vacinacao_Covid/5.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado utente: Idutente, Nº Segurança_Social,
@@ -32,8 +33,8 @@ utente(5,436329091,rodrigo,(21,01,2001),email5,253010123,vila_do_conde,eng_mater
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado centro_saúde: Idcentro, Nome, Morada, Telefone, Email -> {V,F}
 
-centro_saúde(1,centro_saude_1,viana,253456712,emailC1).
-centro_saúde(2,centro_saude_2,viseu,253921733,emailC2).
+centro_saude(1,centro_saude_1,viana,253456712,emailC1).
+centro_saude(2,centro_saude_2,viseu,253921733,emailC2).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado staff: Idstaff, Idcentro, Nome, email -> {V,F}
@@ -67,7 +68,7 @@ inserir(Termo) :- retract(Termo), !, fail.
         comprimento(S,N),
         N == 1).
 
-+centro_saúde(IdCS,_,_,_,_) ::
++centro_saude(IdCS,_,_,_,_) ::
               (solucoes(IdCS,
                centro_saúde(IdCS,_,_,_,_),S),
                comprimento(S,N),
@@ -86,12 +87,12 @@ inserir(Termo) :- retract(Termo), !, fail.
 
 +utente(_,_,_,_,_,_,_,_,_,IdCS) ::
        (solucoes(IdsCS,
-        (centro_saúde(IdsCS,_,_,_,_)),S),
+        (centro_saude(IdsCS,_,_,_,_)),S),
         pertence(IdCS,S)).
 
 +staff(_,IdC,_,_) ::
        (solucoes(IdsCS,
-       (centro_saúde(IdsCS,_,_,_,_)),S),
+       (centro_saude(IdsCS,_,_,_,_)),S),
         pertence(IdC,S)).
 
 +vacinacao_Covid(Staff,Utente,_,_,_) ::
@@ -111,6 +112,30 @@ evolucao( Termo ) :- solucoes(Invariante,+Termo::Invariante,Lista),
                      teste(Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Registar Utentes
+
+registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
+              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Registar Centro de Saúde
+
+registaCentro(Id,Nome,Mor,Tel,Email) :-
+             evolucao(centro_saude(Id,Nome,Mor,Tel,Email)).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Registar Staff
+
+registaStaff(Id,Idcentro,Nome,Email) :-
+            evolucao(staff(Id,Idcentro,Nome,Email)).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Registar Vacinação
+
+registaVacinacao(Idstaff,Idutente,Data,Vac,T) :-
+                evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,T)).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 1) Definição de fases:
 % Fase1 -> medicos, enfermeiros e pessoas >80 com doenças crónicas
 %       -> a partir de __/__/____
@@ -128,9 +153,9 @@ dataFase1((1,12,2020)).
 dataFase2((1,4,2021)).
 dataFase3((1,7,2021)).
 
-fase1(Lista) :- solucoes(X,candidata1(X),Lista).
-fase2(Lista) :- solucoes(X,candidata2(X),Lista).
-fase3(Lista) :- solucoes(X,candidata3(X),Lista).
+fase1(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata1(X),Lista).
+fase2(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata2(X),Lista).
+fase3(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata3(X),Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Verificar se uma pessoa é candidata a uma fase de vacinação: Utente -> {V,F}
@@ -138,15 +163,13 @@ fase3(Lista) :- solucoes(X,candidata3(X),Lista).
 candidata1(Id):-
       utente(Id,_,_,_,_,_,_,P,_,_),
       profissoesFase1(Ps),
-      pertence(P,Ps).
+      pertence(P,Ps),!.
 candidata1(Id) :-
-      utente(Id,_,_,(D,M,A),_,_,_,P,Ds,_),
+      utente(Id,_,_,(D,M,A),_,_,_,_,Ds,_),
       idade((D,M,A),R),
       R >= 80,
       comprimento(Ds,N),
-      N >= 1,
-      profissoesFase1(Ps),
-      nao(pertence(P,Ps)).
+      N >= 1.
 
 candidata2(Id) :-
       utente(Id,_,_,(D,M,A),_,_,_,_,Ds,_),
@@ -173,8 +196,8 @@ candidata3(Id) :-
 nao_vacinada(X):- nao(vacinada(X)).
 
 nao_vacinadas(Lista) :-
-        solucoes(Ids,
-        (utente(Ids,_,_,_,_,_,_,_,_,_),nao_vacinada(Ids))
+        solucoes((Ids,Nomes),
+        (utente(Ids,_,Nomes,_,_,_,_,_,_,_),nao_vacinada(Ids))
         ,Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -183,9 +206,9 @@ nao_vacinadas(Lista) :-
 vacinada(X):- vacinacao_Covid(_,X,_,_,_).
 
 vacinadas(Lista) :-
-        solucoesSRep(Ids,
-        (utente(Ids,_,_,_,_,_,_,_,_,_),vacinada(Ids)),
-        Lista).
+        (solucoesSRep((Ids,Nomes),
+        (utente(Ids,_,Nomes,_,_,_,_,_,_,_),vacinada(Ids)),
+        Lista)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 4) Identificar pessoas vacinadas indevidamente: Utente -> {V,F}
@@ -209,34 +232,68 @@ vacina_indevida(X) :-
         dataFase3((D1,M1,A1)),
         anterior((D,M,A),(D1,M1,A1)).
 
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Data atual
-date(Day,Month,Year) :-
-    get_time(Stamp),
-    stamp_date_time(Stamp, DateTime, local),
-    date_time_value(year, DateTime, Year),
-    date_time_value(month, DateTime, Month),
-    date_time_value(day, DateTime, Day).
+vacinas_indevidas(Lista) :-
+      (solucoesSRep((Ids,Nomes),
+      (utente(Ids,_,Nomes,_,_,_,_,_,_,_),vacina_indevida(Ids)),
+      Lista)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Verificar se uma data é anterior a outra
+% 5) Identificar pessoas não vacinadas e que são candidatas (por fases)
 
-anterior((_,_,A1),(_,_,A2)) :- A1 < A2.
-anterior((_,M1,A1),(_,M2,A2)) :- A1 == A2, M1 < M2.
-anterior((D1,M1,A1),(D2,M2,A2)) :- A1 == A2, M1 == M2, D1 < D2.
+% Pessoas nao vacinadas e candidatas a fase 1
+nao_vacinada1(X) :-
+      nao_vacinada(X),
+      candidata1(X).
 
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Calcular a idade de um utente
-idade((_,M,A),I):- date(_,Y,Z), I is Z-A, M<Y.
-idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M==Y, D=<X.
-idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M==Y, D>X.
-idade((_,M,A),I):- date(_,Y,Z), I is Z-A-1, M>=Y.
+nao_vacinadas1(Lista) :-
+      (solucoes((Ids,Nomes),
+      (utente(Ids,_,Nomes,_,_,_,_,_,_,_),nao_vacinada1(Ids)),
+      Lista)).
+
+% Pessoas nao vacinadas e candidatas a fase 2
+nao_vacinada2(X) :-
+      nao_vacinada(X),
+      candidata2(X).
+
+nao_vacinadas2(Lista) :-
+      (solucoes((Ids,Nomes),
+      (utente(Ids,_,Nomes,_,_,_,_,_,_,_),nao_vacinada2(Ids)),
+      Lista)).
+
+% Pessoas nao vacinadas e candidatas a fase 3
+nao_vacinada3(X) :-
+      nao_vacinada(X),
+      candidata3(X).
+
+nao_vacinadas3(Lista) :-
+      (solucoes((Ids,Nomes),
+      (utente(Ids,_,Nomes,_,_,_,_,_,_,_),nao_vacinada3(Ids)),
+      Lista)).
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 6) Identificar pessoas que falta a segunda toma: Utente -> {V,F}
 
-falta_2toma(_):- not(nao_falta_2toma).
-nao_falta_2toma(X):- vacinacao_Covid(_,X,_,_,Y), Y==2.
+falta_2toma(X):-
+      (solucoes(Ys,
+      (vacinacao_Covid(_,X,_,_,Ys)),
+      Res),
+      comprimento(Res,N),
+      N == 1,
+      [H|_] = Res,
+      H == 1).
+
+falta_2tomaLista(Lista) :-
+      (solucoes((Ids,Nomes),
+      (utente(Ids,_,Nomes,_,_,_,_,_,_,_),falta_2toma(Ids)),
+      Lista)).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% 7) Extensao do sistema de inferencia si: Questao, (Valor -> {V,F}}
+si(Questao,verdadeiro) :-
+    Questao.
+si(Questao,falso) :-
+    nao(Questao).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Lista das pessoas vacinadas num determinado centro de saúde
@@ -256,6 +313,46 @@ vacinas_centro(Idcentro,L):- solucoesSRep(Vacina,
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Lista das pessoas que tomaram uma determinada vacina
+pessoas_vacina(Vacina,L) :- solucoesSRep(Nome,
+                            (vacinacao_Covid(_,Idu,_,Vacina,_),
+                            utente(Idu,_,Nome,_,_,_,_,_,_,_)),
+                            L).
+
+pessoas_staff(Staff,(NomeStaff,Nomes)):-
+  	solucoesSRep(N,(vacinacao_Covid(Staff,U,_,_,_),utente(U,_,N,_,_,_,_,_,_,_)),Nomes),
+    staff(Staff,NomeStaff,_,_).
+
+vacinacao_completa(R) :- solucoesSRep((Idu,Nome),
+                         (vacinacao_Covid(_,Idu,_,_,2),
+                         utente(Idu,_,Nome,_,_,_,_,_,_,_)),
+                         R).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Data atual
+date(Day,Month,Year) :-
+    get_time(Stamp),
+    stamp_date_time(Stamp, DateTime, local),
+    date_time_value(year, DateTime, Year),
+    date_time_value(month, DateTime, Month),
+    date_time_value(day, DateTime, Day).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Verificar se uma data é anterior a outra
+
+anterior((_,_,A1),(_,_,A2)) :- A1 < A2.
+anterior((_,M1,A1),(_,M2,A2)) :- A1 == A2, M1 < M2.
+anterior((D1,M1,A1),(D2,M2,A2)) :- A1 == A2, M1 == M2, D1 < D2.
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Calcular a idade de um utente
+idade((_,M,A),I):- date(_,Y,Z), I is Z-A, M<Y.
+idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M==Y, D=<X.
+idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M==Y, D>X.
+idade((_,M,A),I):- date(_,Y,Z), I is Z-A-1, M>=Y.
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado solucoes
 solucoes(X,P,S) :- findall(X,P,S).
 
@@ -263,7 +360,7 @@ solucoes(X,P,S) :- findall(X,P,S).
 % Predicado solucoes sem repetiçoes
 solucoesSRep(X,Y,Z1) :-
         findall(X,Y,Z),
-        sort(Z,Z1).
+        list_to_set(Z,Z1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Comprimento da Lista
@@ -285,14 +382,6 @@ pertence(X,[H|T]) :-
 % Concatenar uma lista
 append([ ], L, L).
 append([H|L1], L2, [H|L3]):- append(L1, L2, L3).
-
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensao do sistema de inferencia si: Questao, (Valor -> {V,F}}
-si(Questao,verdadeiro) :-
-    Questao.
-si(Questao,falso) :-
-    nao(Questao).
-
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado nao: Questao -> {V,F}

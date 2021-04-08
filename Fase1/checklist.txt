@@ -5,6 +5,7 @@
 - Definição de fases
 - Identificar pessoas não vacinadas
 - Identificar pessoas vacinadas
+- Identificar pessoas vacinadas indevidamente
 - Identificar pessoas que falta a segunda toma
 - Lista das pessoas vacinadas num determinado centro de saúde
 - Lista das diferentes vacinas dadas num determinado centro de saúde

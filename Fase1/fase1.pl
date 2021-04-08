@@ -2,12 +2,15 @@
 % Programacao em logica
 % Vacinacao global da populacao portuguesa em contexto COVID
 
+% Grupo 20
+% Guilherme Martins a89532 - Jaime Oliveira a89598 - João Pereira a89607
+% José Costa a89519 - Tiago Freitas a89570
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % PROLOG: Declaracoes iniciais
 
 :- set_prolog_flag( discontiguous_warnings,off ).
 :- set_prolog_flag( single_var_warnings,off ).
-%:- set_prolog_flag( unknown,fail ).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Definicoes iniciais
@@ -23,40 +26,34 @@
 % Nome, Data_Nasc, Email, Telefone, Morada,
 % Profissão, [Doenças_Crónicas], CentroSaúde -> {V,F}
 
-utente(1,123456789,pedro,(19,02,1934),email1,253123451,almada,bombeiro,[],1).
-utente(2,123123123,manuel,(13,03,1945),email2,253429351,barcelos,medico,[],1).
-utente(3,523183123,carla,(02,12,1977),email3,253459320,coimbra,jornalista,[],2).
-utente(4,256331909,roberto,(21,01,1955),email4,253919559,guimarães,eng_informático,[hipertensão],2).
-utente(5,436329091,rodrigo,(21,01,2001),email5,253010123,vila_do_conde,eng_materiais,[],1).
-
+utente(1,123456789,'Pedro Oliveira',(19,02,1934),'po@gmail.com',253123451,'Barcelos','Bombeiro',[],1).
+utente(2,123123123,'Manuel Faria',(13,03,1945),'mf@gmail.com',253429351,'Barcelos','Medico',[],1).
+utente(3,523183123,'Carla Castro',(02,12,1977),'cc@gmail.com',253459320,'Viana do Castelo','Jornalista',[],2).
+utente(4,256331909,'Roberto Carlos',(21,01,1955),'rc@gmail.com',253919559,'Guimarães','Engenheiro Informático',['Hipertensão'],2).
+utente(5,436329091,'Rita Neves',(21,01,2001),'rn@gmail.com',253010123,'Viana do Castelo','Engenheira de Materiais',[],1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado centro_saúde: Idcentro, Nome, Morada, Telefone, Email -> {V,F}
 
-centro_saude(1,centro_saude_1,viana,253456712,emailC1).
-centro_saude(2,centro_saude_2,viseu,253921733,emailC2).
+centro_saude(1,'Centro de saúde de Viana','Viana do Castelo',253456712,'csv@gmail.com').
+centro_saude(2,'Centro de saúde de Guimarães','Guimarães',253921733,'csg@gmail.com').
+centro_saude(3,'Centro de saúde de Barcelos','Barcelos',253004239,'csb@gmail.com').
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado staff: Idstaff, Idcentro, Nome, email -> {V,F}
 
-staff(1,2,jose,emailS1).
-staff(2,1,joao,emailS2).
-staff(3,1,maria,emailS3).
-staff(4,1,renata,emailS4).
-staff(5,2,marta,emailS5).
+staff(1,2,'Jose Sa','js@gmail.com').
+staff(2,1,'Joao Marques','jm@gmail.com').
+staff(3,1,'Maria Matos','m&m@gmail.com').
+staff(4,3,'Renata Peixoto','rp@gmail.com').
+staff(5,2,'Marta Domingues','md@gmail.com').
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado vacinação_Covid:  Staf, utente, Data, Vacina, Toma -> {V,F}
 
-vacinacao_Covid(4,3,(23,03,2021),astrazeneca,1).
-vacinacao_Covid(5,3,(06,04,2021),astrazeneca,2).
-vacinacao_Covid(2,1,(01,04,2021),astrazeneca,1).
-
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Inserir predicados
-
-inserir(Termo) :- assert(Termo).
-inserir(Termo) :- retract(Termo), !, fail.
+vacinacao_Covid(4,2,(23,03,2021),'Astrazeneca',1).
+vacinacao_Covid(4,2,(06,04,2021),'Astrazeneca',2).
+vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Invariantes estruturais: nao permitir a insercao de conhecimento
@@ -80,42 +77,44 @@ inserir(Termo) :- retract(Termo), !, fail.
              comprimento(S,N),
              N == 1).
 
+%não deixar inserir uma toma > 2
++vacinacao_Covid(_,_,_,_,Toma) ::
+        Toma =< 2.
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Invariantes referenciais: nao permite relacionar uma entidade a outra
 %                           que nao exista (aquando da insercao)
-% Exemplo: inserir um utente que refere um centro de saude inexistente
+%não deixar inserir um utente ou staff que refere um centro de saude inexistente
 
 +utente(_,_,_,_,_,_,_,_,_,IdCS) ::
        (solucoes(IdsCS,
-        (centro_saude(IdsCS,_,_,_,_)),S),
-        pertence(IdCS,S)).
+       (centro_saude(IdsCS,_,_,_,_)),S),
+       pertence(IdCS,S)).
 
 +staff(_,IdC,_,_) ::
        (solucoes(IdsCS,
        (centro_saude(IdsCS,_,_,_,_)),S),
-        pertence(IdC,S)).
+       pertence(IdC,S)).
 
-+vacinacao_Covid(Staff,Utente,_,_,_) ::
-        (solucoes(Staffs,
-        (staff(Staffs,_,_,_)),S),
-        solucoes(Utentes,
-        (utente(Utentes,_,_,_,_,_,_,_,_,_)),S1),
-        pertence(Staff,S),
-        pertence(Utente,S1)).
+%não deixar inserir a segunda toma sem existir a primeira
++vacinacao_Covid(Staff,Utente,_,_,2) ::
+        (solucoes((Staff,Utente,1),
+        (vacinacao_Covid(Staff,Utente,_,_,1)),R),
+        comprimento(R,N),
+        N == 1).
 
-
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensao do predicado que permite a evolucao do conhecimento
-
-evolucao( Termo ) :- solucoes(Invariante,+Termo::Invariante,Lista),
-                     inserir(Termo),
-                     teste(Lista).
+%não deixar tomar a segunda dose com uma vacina diferente da primeira
++vacinacao_Covid(Staff,Utente,_,Nome,2) ::
+        (solucoes((Staff,Utente,Nome,1),
+        (vacinacao_Covid(Staff,Utente,_,Nome,1)),R),
+        comprimento(R,N),
+        N == 1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Registar Utentes
 
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
-              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)).
+             evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Registar Centro de Saúde
@@ -147,15 +146,15 @@ registaVacinacao(Idstaff,Idutente,Data,Vac,T) :-
 %       -> a partir de __/__/____
 
 % Lista de profissoes incluídas na fase 1
-profissoesFase1([medico,enfermeiro]).
+profissoesFase1(['Medico','Enfermeiro','Medica','Enfermeira']).
 
 dataFase1((1,12,2020)).
 dataFase2((1,4,2021)).
 dataFase3((1,7,2021)).
 
-fase1(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata1(X),Lista).
-fase2(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata2(X),Lista).
-fase3(Lista) :- solucoes((X,Nomes),utente(X,_,Nomes,_,_,_,_,_,_,_),candidata3(X),Lista).
+fase1(Lista) :- solucoes((X,Nomes),(utente(X,_,Nomes,_,_,_,_,_,_,_),candidata1(X)),Lista).
+fase2(Lista) :- solucoes((X,Nomes),(utente(X,_,Nomes,_,_,_,_,_,_,_),candidata2(X)),Lista).
+fase3(Lista) :- solucoes((X,Nomes),(utente(X,_,Nomes,_,_,_,_,_,_,_),candidata3(X)),Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Verificar se uma pessoa é candidata a uma fase de vacinação: Utente -> {V,F}
@@ -331,15 +330,26 @@ vacinacao_completa(R) :- solucoesSRep((Idu,Nome),
                          R).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Registar algo
-registar(P) :-
-    evolucao(P).
+% Inserir predicados
+
+inserir(Termo) :- assert(Termo).
+inserir(Termo) :- retract(Termo), !, fail.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Mostrar Utentes
-mostrarRegistos(P) :-
-    listing(P).
+% Extensao do predicado que permite a evolucao do conhecimento
 
+evolucao( Termo ) :- solucoes(Invariante,+Termo::Invariante,Lista),
+                     inserir(Termo),
+                     teste(Lista).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Predicado teste
+teste([]).
+teste([R|LR]) :- R, teste(LR).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Mostrar registos
+mostrarRegistos(P) :- listing(P).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Data atual
 date(Day,Month,Year) :-
@@ -377,11 +387,6 @@ solucoesSRep(X,Y,Z1) :-
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Comprimento da Lista
 comprimento(S,N) :- length(S,N).
-
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Predicado teste
-teste([]).
-teste([R|LR]) :- R, teste(LR).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Pertencer a uma Lista

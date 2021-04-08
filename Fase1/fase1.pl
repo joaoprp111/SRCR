@@ -172,10 +172,42 @@ candidata3(Id) :-
 
 nao_vacinada(X):- nao(vacinada(X)).
 
+nao_vacinadas(Lista) :-
+        solucoes(Ids,
+        (utente(Ids,_,_,_,_,_,_,_,_,_),nao_vacinada(Ids))
+        ,Lista).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 3) Identificar pessoas vacinadas: Utente -> {V,F}
 
 vacinada(X):- vacinacao_Covid(_,X,_,_,_).
+
+vacinadas(Lista) :-
+        solucoesSRep(Ids,
+        (utente(Ids,_,_,_,_,_,_,_,_,_),vacinada(Ids)),
+        Lista).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% 4) Identificar pessoas vacinadas indevidamente: Utente -> {V,F}
+
+vacina_indevida(X) :-
+        vacinada(X),
+        candidata1(X),
+        vacinacao_Covid(_,X,(D,M,A),_,_),
+        dataFase1((D1,M1,A1)),
+        anterior((D,M,A),(D1,M1,A1)).
+vacina_indevida(X) :-
+        vacinada(X),
+        candidata2(X),
+        vacinacao_Covid(_,X,(D,M,A),_,_),
+        dataFase2((D1,M1,A1)),
+        anterior((D,M,A),(D1,M1,A1)).
+vacina_indevida(X) :-
+        vacinada(X),
+        candidata3(X),
+        vacinacao_Covid(_,X,(D,M,A),_,_),
+        dataFase3((D1,M1,A1)),
+        anterior((D,M,A),(D1,M1,A1)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Data atual
@@ -185,6 +217,13 @@ date(Day,Month,Year) :-
     date_time_value(year, DateTime, Year),
     date_time_value(month, DateTime, Month),
     date_time_value(day, DateTime, Day).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Verificar se uma data é anterior a outra
+
+anterior((_,_,A1),(_,_,A2)) :- A1 < A2.
+anterior((_,M1,A1),(_,M2,A2)) :- A1 == A2, M1 < M2.
+anterior((D1,M1,A1),(D2,M2,A2)) :- A1 == A2, M1 == M2, D1 < D2.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Calcular a idade de um utente
@@ -222,7 +261,9 @@ solucoes(X,P,S) :- findall(X,P,S).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado solucoes sem repetiçoes
-solucoesSRep(X,Y,Z) :- setof(X,Y,Z).
+solucoesSRep(X,Y,Z1) :-
+        findall(X,Y,Z),
+        sort(Z,Z1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Comprimento da Lista
@@ -239,6 +280,11 @@ pertence(H,[H|_]):-!,true.
 pertence(X,[H|T]) :-
     X \= H,
     pertence(X,T).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Concatenar uma lista
+append([ ], L, L).
+append([H|L1], L2, [H|L3]):- append(L1, L2, L3).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do sistema de inferencia si: Questao, (Valor -> {V,F}}

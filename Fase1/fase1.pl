@@ -194,13 +194,13 @@ registaVacinacao(Idstaff,Idutente,Data,Vac,T) :-
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 1) Definição de fases:
 % Fase1 -> medicos, enfermeiros e pessoas >80 com doenças crónicas
-%       -> a partir de __/__/____
+%       -> a partir de 1/12/2020
 
 % Fase2 -> pessoas > 50 com doenças ou >65
-%       -> a partir de __/__/____
+%       -> a partir de 1/4/2021
 
 % Fase3 -> o resto
-%       -> a partir de __/__/____
+%       -> a partir de 1/7/2021
 
 % Lista de profissoes incluídas na fase 1
 profissoesFase1(['Medico','Enfermeiro','Medica','Enfermeira']).
@@ -377,10 +377,15 @@ pessoas_vacina(Vacina,L) :- solucoesSRep(Nome,
                             utente(Idu,_,Nome,_,_,_,_,_,_,_)),
                             L).
 
-pessoas_staff(Staff,(NomeStaff,Nomes)):-
-  	solucoesSRep(N,(vacinacao_Covid(Staff,U,_,_,_),utente(U,_,N,_,_,_,_,_,_,_)),Nomes),
-    staff(Staff,NomeStaff,_,_).
+% Lista das pessoas que receberam a vacina por uma determinada pessoa do staff
+pessoas_staff(Staff,(NomeStaff,Nomes)) :- solucoesSRep(N,
+                                          (vacinacao_Covid(Staff,U,_,_,_),
+                                          utente(U,_,N,_,_,_,_,_,_,_)),
+                                          Nomes),
+                                          staff(Staff,NomeStaff,_,_).
 
+
+% Lista das pessoas que têm a vacinação completa
 vacinacao_completa(R) :- solucoesSRep((Idu,Nome),
                          (vacinacao_Covid(_,Idu,_,_,2),
                          utente(Idu,_,Nome,_,_,_,_,_,_,_)),

@@ -107,7 +107,7 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
       comprimento(S,N),
       N == 1).
 
-% Utente - Toma válida
+% Vacinação - Toma válida
 +vacinacao_Covid(_,_,_,_,T) ::
       (T >=1,T =< 2).
 
@@ -116,7 +116,6 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
 %                           que nao exista (aquando da insercao)
 
 % Utente exige um Centro de Saúde existente
-
 +utente(_,_,_,_,_,_,_,_,_,IdCS) ::
        (solucoes(IdsCS,
        (centro_saude(IdsCS,_,_,_,_)),S),
@@ -348,7 +347,7 @@ falta_2tomaLista(Lista) :-
       Lista)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% 7) Extensao do sistema de inferencia si: Questao, (Valor -> {V,F}}
+% Extensao do sistema de inferencia si: Questao, (Valor -> {V,F}}
 si(Questao,verdadeiro) :-
     Questao.
 si(Questao,falso) :-
@@ -408,6 +407,7 @@ teste([R|LR]) :- R, teste(LR).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Mostrar registos
 mostrarRegistos(P) :- listing(P).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Data atual
 date(Day,Month,Year) :-
@@ -423,7 +423,6 @@ date(Day,Month,Year) :-
 anterior((_,_,A1),(_,_,A2)) :- A1 < A2.
 anterior((_,M1,A1),(_,M2,A2)) :- A1 == A2, M1 < M2.
 anterior((D1,M1,A1),(D2,M2,A2)) :- A1 == A2, M1 == M2, D1 < D2.
-
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Calcular a idade de um utente
@@ -465,7 +464,6 @@ append([H|L1], L2, [H|L3]):- append(L1, L2, L3).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado nao: Questao -> {V,F}
-
 nao( Questao ) :-
     Questao, !, fail.
 nao( _ ).

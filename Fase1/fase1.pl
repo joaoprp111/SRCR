@@ -49,7 +49,7 @@ staff(4,3,'Renata Peixoto','rp@gmail.com').
 staff(5,2,'Marta Domingues','md@gmail.com').
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensao do predicado vacinação_Covid:  Staf, utente, Data, Vacina, Toma -> {V,F}
+% Extensao do predicado vacinação_Covid:  Staff, Utente, Data, Vacina, Toma -> {V,F}
 
 vacinacao_Covid(4,2,(23,03,2021),'Astrazeneca',1).
 vacinacao_Covid(4,2,(06,04,2021),'Astrazeneca',2).
@@ -57,58 +57,116 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Invariantes estruturais: nao permitir a insercao de conhecimento
-%                         repetido (com o mesmo id)
+%                          repetido nem inváilido
 
+% Utente - Id
 +utente(Id,_,_,_,_,_,_,_,_,_) ::
        (solucoes(Id,
         (utente(Id,_,_,_,_,_,_,_,_,_)),S),
         comprimento(S,N),
         N == 1).
 
+% Utente - Nº Segurança Social
++utente(_,Nss,_,_,_,_,_,_,_,_) ::
+       (solucoes(Nss,
+       (utente(_,Nss,_,_,_,_,_,_,_,_)),S),
+       comprimento(S,N),
+       N == 1).
+
+% Centro de Saúde - Id
 +centro_saude(IdCS,_,_,_,_) ::
-              (solucoes(IdCS,
-               centro_saúde(IdCS,_,_,_,_),S),
-               comprimento(S,N),
-               N == 1).
+       (solucoes(IdCS,
+       (centro_saude(IdCS,_,_,_,_)),S),
+       comprimento(S,N),
+       N == 1).
 
+% Centro de Saúde - Telefone
++centro_saude(_,_,_,Tel,_) ::
+       (solucoes(Tel,
+       (centro_saude(_,_,_,Tel,_)),S),
+       comprimento(S,N),
+       N == 1).
+
+% Centro de Saúde - Email
++centro_saude(_,_,_,_,Email) ::
+       (solucoes(Email,
+       (centro_saude(_,_,_,_,Email)),S),
+       comprimento(S,N),
+       N == 1).
+
+% Staff - Id
 +staff(Id,_,_,_) ::
-             (solucoes(Id,
-             staff(Id,_,_,_),S),
-             comprimento(S,N),
-             N == 1).
+      (solucoes(Id,
+      staff(Id,_,_,_),S),
+      comprimento(S,N),
+      N == 1).
 
-%não deixar inserir uma toma > 2
-+vacinacao_Covid(_,_,_,_,Toma) ::
-        Toma =< 2.
+% Staff - Email
++staff(_,_,_,Email) ::
+      (solucoes(Email,staff(_,_,_,Email),S),
+      comprimento(S,N),
+      N == 1).
+
+% Utente - Toma válida
++vacinacao_Covid(_,_,_,_,T) ::
+      (T >=1,T =< 2).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Invariantes referenciais: nao permite relacionar uma entidade a outra
 %                           que nao exista (aquando da insercao)
-%não deixar inserir um utente ou staff que refere um centro de saude inexistente
+
+% Utente exige um Centro de Saúde existente
 
 +utente(_,_,_,_,_,_,_,_,_,IdCS) ::
        (solucoes(IdsCS,
        (centro_saude(IdsCS,_,_,_,_)),S),
        pertence(IdCS,S)).
 
+% Staff exige um Centro de Saúde existente
 +staff(_,IdC,_,_) ::
        (solucoes(IdsCS,
        (centro_saude(IdsCS,_,_,_,_)),S),
        pertence(IdC,S)).
 
-%não deixar inserir a segunda toma sem existir a primeira
+% Vacinação exige Staff existente
++vacinacao_Covid(Staff,_,_,_,_) ::
+        (solucoes(IdS,
+        (staff(IdS,_,_,_)),S),
+        pertence(Staff,S)).
+
+% Vacinação exige Utente existente
++vacinacao_Covid(_,U,_,_,_) ::
+        (solucoes(IdU,
+        (utente(IdU,_,_,_,_,_,_,_,_,_)),S),
+        pertence(U,S)).
+
+% Segunda dose de uma vacina exige uma primeira já existente
 +vacinacao_Covid(Staff,Utente,_,_,2) ::
         (solucoes((Staff,Utente,1),
         (vacinacao_Covid(Staff,Utente,_,_,1)),R),
         comprimento(R,N),
         N == 1).
 
-%não deixar tomar a segunda dose com uma vacina diferente da primeira
+% Segunda dose de uma vacina exige uma vacina igual à primeira
 +vacinacao_Covid(Staff,Utente,_,Nome,2) ::
         (solucoes((Staff,Utente,Nome,1),
         (vacinacao_Covid(Staff,Utente,_,Nome,1)),R),
         comprimento(R,N),
         N == 1).
+
+% Primeira dose de uma vacina exige que esse Utente nao tenha sido vacinado ainda
++vacinacao_Covid(_,U,_,_,1) ::
+        (solucoes(U,
+        (vacinacao_Covid(_,U,_,_,_)),R),
+        comprimento(R,N),
+        N == 0).
+
+% Segunda dose de uma vacina exige que seja depois da primeira (data)
++vacinacao_Covid(_,U,Data2,V,2) ::
+        (solucoes((D1,M1,A1),
+        (vacinacao_Covid(_,U,(D1,M1,A1),V,1)),R),
+        head(R,X),
+        anterior(X,Data2)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Registar Utentes
@@ -394,6 +452,11 @@ pertence(H,[H|_]):-!,true.
 pertence(X,[H|T]) :-
     X \= H,
     pertence(X,T).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Cabeça de uma lista
+head([H],H).
+head([H|_],H).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Concatenar uma lista

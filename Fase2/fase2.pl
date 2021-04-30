@@ -37,7 +37,32 @@ utente(5,436329091,'Rita Neves',(21,01,2001),'rn@gmail.com',253010123,'Viana do 
 % Negação forte do predicado utente
 -utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs) :- nao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs)),
                                        nao(excecao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs))).
-                                       
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Inserção de conhecimento negativo para o predicado utente
+-utente(8,'Cristiano Ronaldo',(05,02,1985),'cr7@gmail.com',253991955,'Madeira','Futebolista',[],2).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito incerto para o predicado utente
+
+utente(9,'Cláudio Coelho',(09,03,2000),'ccgmail.com',253444343,'Braga','Motorista',[],incerto).
+
+excecao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs)) :-
+    utente(Id,Nss,N,D,E,Tel,M,P,Dc,incerto).
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito impreciso para o predicado utente
+
+excecao(utente(10,'Cristina Ferreira',(12,02,1984),'cfgmail.com',Impreciso,'Lisboa','Apresentadora',[],2)) :-
+    Impreciso >= 253777777, Impreciso =< 253888888.
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito interdito para o predicado utente
+
+
+
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado centro_saúde: Idcentro, Nome, Morada, Telefone, Email -> {V,F}
 
@@ -508,6 +533,18 @@ head([H|_],H).
 % Concatenar uma lista
 append([ ], L, L).
 append([H|L1], L2, [H|L3]):- append(L1, L2, L3).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Extensao do meta-predicado demo: Questao,Resposta -> {V,F}
+%                            Resposta = { verdadeiro,falso,desconhecido }
+
+demo( Questao,verdadeiro ) :-
+    Questao.
+demo( Questao,falso ) :-
+    -Questao.
+demo( Questao,desconhecido ) :-
+    nao( Questao ),
+    nao( -Questao ).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado nao: Questao -> {V,F}

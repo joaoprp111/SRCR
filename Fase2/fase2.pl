@@ -21,6 +21,7 @@
 :- dynamic centro_saude/5.
 :- dynamic staff/4.
 :- dynamic vacinacao_Covid/5.
+:- dynamic excecao/1.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado utente: Idutente, Nº Segurança_Social,
@@ -291,16 +292,33 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
          N == 1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Registar Utentes
+% REGISTAR UTENTE
 
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)).
+
+% Pelo tipo (positivo ou negativo)
+
+registaUtente(Type,Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
+             evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs),Type).
+
+% Com conhecimento imperfeito incerto
+
+% -> NSS
+registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
+             Valor == incerto,
+             Incerto == nss,
+             evolucao(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs),
+             assert((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+                  utente(I,Nss,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd))).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Registar Centro de Saúde
 
 registaCentro(Id,Nome,Mor,Tel,Email) :-
              evolucao(centro_saude(Id,Nome,Mor,Tel,Email)).
+registaCentro(Type,Id,Nome,Mor,Tel,Email) :-
+             evolucao(centro_saude(Id,Nome,Mor,Tel,Email),Type).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Registar Staff
@@ -470,12 +488,6 @@ falta_2tomaLista(Lista) :-
       Lista)).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensao do sistema de inferencia si: Questao, (Valor -> {V,F}}
-si(Questao,verdadeiro) :- Questao.
-si(Questao,falso) :- -Questao.
-si(Questao,desconhecido) :- nao(Questao), nao(-Questao).
-
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Lista das pessoas vacinadas num determinado centro de saúde
 
 pessoas_vacinadas_centro(Idcentro,L):- solucoesSRep((Idu,Nome),
@@ -528,28 +540,55 @@ remover(Termo) :- assert(Termo), !, fail.
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado que permite a evolucao do conhecimento
 
-evolucao( Termo ) :- solucoes(Invariante,+Termo::Invariante,Lista),
+evolucao(Termo) :- solucoes(Invariante,+Termo::Invariante,Lista),
                      inserir(Termo),
                      teste(Lista).
 
+% com tipo (positivo ou negativo)
+
+evolucao(Termo, Type) :- Type == positivo,
+                         solucoes(Invariante,+Termo::Invariante,Lista),
+                         inserir(Termo), 
+                         teste(Lista).
+
+evolucao(Termo, Type) :- Type == negativo,
+                         solucoes(Invariante, +(-Termo)::Invariante, Lista),
+                         inserir(-Termo), 
+                         teste(Lista).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensao do predicado que permite a evolucao do conhecimento
+% Extensao do predicado que permite a "involução" do conhecimento
 
 involucao( Termo ) :- solucoes(Invariante,-Termo::Invariante,Lista),
                       remover(Termo),
                       teste(Lista).
 
+% com tipo (positivo ou negativo)
+
+involucao(Termo, Type) :- Type == positivo,
+                         solucoes(Invariante,-Termo::Invariante,Lista),
+                         remover(Termo), 
+                         teste(Lista).
+
+involucao(Termo, Type) :- Type == negativo,
+                         solucoes(Invariante, -(-Termo)::Invariante, Lista),
+                         remover(-Termo), 
+                         teste(Lista).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado teste
+
 teste([]).
 teste([R|LR]) :- R, teste(LR).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Mostrar registos
+
 mostrarRegistos(P) :- listing(P).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Data atual
+
 date(Day,Month,Year) :-
     get_time(Stamp),
     stamp_date_time(Stamp, DateTime, local),
@@ -566,6 +605,7 @@ anterior((D1,M1,A1),(D2,M2,A2)) :- A1 == A2, M1 == M2, D1 < D2.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Calcular a idade de um utente
+
 idade((_,M,A),I):- date(_,Y,Z), I is Z-A, M<Y.
 idade((D,M,A),I):- date(X,Y,Z), I is Z-A, M==Y, D=<X.
 idade((D,M,A),I):- date(X,Y,Z), I is Z-A-1, M==Y, D>X.
@@ -573,32 +613,35 @@ idade((_,M,A),I):- date(_,Y,Z), I is Z-A-1, M>=Y.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado solucoes
+
 solucoes(X,P,S) :- findall(X,P,S).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Predicado solucoes sem repetiçoes
-solucoesSRep(X,Y,Z1) :-
-        findall(X,Y,Z),
-        list_to_set(Z,Z1).
+
+solucoesSRep(X,Y,Z1) :- findall(X,Y,Z),
+                        list_to_set(Z,Z1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Comprimento da Lista
+
 comprimento(S,N) :- length(S,N).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Pertencer a uma Lista
+
 pertence(H,[H|_]):-!,true.
-pertence(X,[H|T]) :-
-    X \= H,
-    pertence(X,T).
+pertence(X,[H|T]) :- X \= H, pertence(X,T).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Cabeça de uma lista
+
 head([H],H).
 head([H|_],H).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Concatenar uma lista
+
 append([ ], L, L).
 append([H|L1], L2, [H|L3]):- append(L1, L2, L3).
 
@@ -606,16 +649,12 @@ append([H|L1], L2, [H|L3]):- append(L1, L2, L3).
 % Extensao do meta-predicado demo: Questao,Resposta -> {V,F}
 %                            Resposta = { verdadeiro,falso,desconhecido }
 
-demo( Questao,verdadeiro ) :-
-    Questao.
-demo( Questao,falso ) :-
-    -Questao.
-demo( Questao,desconhecido ) :-
-    nao( Questao ),
-    nao( -Questao ).
+demo( Questao,verdadeiro ) :- Questao.
+demo( Questao,falso ) :- -Questao.
+demo( Questao,desconhecido ) :- nao( Questao ), nao( -Questao ).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado nao: Questao -> {V,F}
-nao( Questao ) :-
-    Questao, !, fail.
+
+nao( Questao ) :- Questao, !, fail.
 nao( _ ).

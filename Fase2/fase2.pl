@@ -23,6 +23,7 @@
 :- dynamic vacinacao_Covid/5.
 :- dynamic excecao/1.
 
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado utente: Idutente, Nº Segurança_Social,
 % Nome, Data_Nasc, Email, Telefone, Morada,
@@ -41,27 +42,39 @@ utente(5,436329091,'Rita Neves',(21,01,2001),'rn@gmail.com',253010123,'Viana do 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Inserção de conhecimento negativo para o predicado utente
--utente(8,'Cristiano Ronaldo',(05,02,1985),'cr7@gmail.com',253991955,'Madeira','Futebolista',[],2).
+-utente(8,372666211,'Cristiano Ronaldo',(05,02,1985),'cr7@gmail.com',253991955,'Madeira','Futebolista',[],2).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito incerto para o predicado utente
 
-utente(9,'Cláudio Coelho',(09,03,2000),'ccgmail.com',253444343,'Braga','Motorista',[],incerto).
+utente(9,nss_incerto,'Cláudio Coelho',(09,03,2000),'cc@gmail.com',253444343,'Braga','Motorista',[],2).
+utente(10,225656292,'Fábio Freitas',(12,06,1998),'ff@gmail.com',253111222,'Taipas',profissao_incerto,['Hipertensão'],3).
 
 excecao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs)) :-
-    utente(Id,Nss,N,D,E,Tel,M,P,Dc,incerto).
+    utente(Id,nss_incerto,N,D,E,Tel,M,P,Dc,Cs).
+
+excecao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs)) :-
+    utente(Id,Nss,N,D,E,Tel,M,profissao_incerto,Dc,Cs).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito impreciso para o predicado utente
 
-excecao(utente(10,'Cristina Ferreira',(12,02,1984),'cfgmail.com',Impreciso,'Lisboa','Apresentadora',[],2)) :-
+excecao(utente(11,252787999,'Cristina Ferreira',(12,02,1984),'cf@gmail.com',Impreciso,'Lisboa','Apresentadora',[],2)) :-
     Impreciso >= 253777777, Impreciso =< 253888888.
+
+excecao(utente(12,112989582,'Carlos Faria',(24,05,1994),'cf@gmail.com',253887454,'Beja','Agricultor',[],Impreciso)) :-
+    Impreciso >= 2, Impreciso =< 3.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito interdito para o predicado utente
 
+utente( 13,447565666,'Ismael Lopes',(04,11,1998),'il@gmail.com',253997815,morada_interdito,'Economista',[],1 ).
+excecao( utente( Id,Nss,N,D,E,Tel,M,P,Dc,Cs ) ) :-
+    utente( Id,Nss,N,D,E,Tel,morada_interdito,P,Dc,Cs ).
 
+
+nulo( morada_interdito ).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -86,20 +99,28 @@ centro_saude(3,'Centro de saúde de Barcelos','Barcelos',253004239,'csb@gmail.co
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito incerto para o predicado centro_saude
 
+centro_saude(7,'Centro de saúde da PVZ',morada_incerto,253994854,'cspvz@gmail.com').
 
+excecao(centro_saude(Id,N,M,Tel,E)) :-
+    centro_saude(Id,N,morada_incerto,Tel,E).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito impreciso para o predicado centro_saude
 
-
-
+excecao(centro_saude(8,'Centro de saúde de Beja','Beja',Impreciso,'csbeja@gmail.com')) :-
+    Impreciso >= 253000000, Impreciso =< 253999999.
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito interdito para o predicado centro_saude
 
+centro_saude(9,'Centro de saúde do Porto','Porto',253747252,email_interdito).
+excecao( centro_saude(Id,N,M,Tel,E) ) :-
+    centro_saude(Id,N,M,Tel,email_interdito).
 
+
+nulo( email_interdito ).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -125,18 +146,28 @@ staff(5,2,'Marta Domingues','md@gmail.com').
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito incerto para o predicado staff
 
+staff(9,1,nome_incerto,'jr@gmail.com').
+
+excecao(staff(Ids,Idc,N,E)) :-
+    staff(Ids,Idc,nome_incerto,E).
+
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito impreciso para o predicado staff
 
+excecao(staff(10,Impreciso,'Clara Matias','cm@gmail.com')) :-
+    Impreciso >= 1, Impreciso =< 3.
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito interdito para o predicado staff
 
+staff(11,3,'Jorge Jerónimo',email_interdito).
+excecao( staff(Ids,Idc,N,E) ) :-
+    staff(Ids,Idc,N,email_interdito).
 
-
-
+nulo( email_interdito ).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado vacinação_Covid:  Staff, Utente, Data, Vacina, Toma -> {V,F}
@@ -159,17 +190,27 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito incerto para o predicado vacinacao_Covid
 
+vacinacao_Covid(4,1,data_incerto,'Pfizer',1).
 
+excecao(vacinacao_Covid(S,U,D,V,T)) :-
+    vacinacao_Covid(S,U,data_incerto,V,T).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito impreciso para o predicado vacinacao_Covid
 
+excecao(vacinacao_Covid(2,4,(25,04,2021),'Astrazeneca',Impreciso)) :-
+    Impreciso >= 1, Impreciso =< 2.
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Conhecimento imperfeito interdito para o predicado vacinacao_Covid
 
+vacinacao_Covid(staff_interdito,6,(01,05,2021),'Astrazeneca',1).
+excecao( vacinacao_Covid(S,U,D,V,T) ) :-
+    vacinacao_Covid(staff_interdito,U,D,V,T).
+
+nulo( staff_interdito ).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -292,45 +333,157 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
          N == 1).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% REGISTAR UTENTE
+% REGISTAR/REMOVER UTENTE
 
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)).
+
+removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
+             involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)).
 
 % Pelo tipo (positivo ou negativo)
 
 registaUtente(Type,Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs),Type).
 
-% Com conhecimento imperfeito incerto
+removeUtente(Type,Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs) :-
+             involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs),Type).
 
+
+% Com conhecimento imperfeito incerto
 % -> NSS
+
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
              Valor == incerto,
              Incerto == nss,
-             evolucao(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs),
-             assert((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+             evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
+             inserir((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
                   utente(I,Nss,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd))).
 
+removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
+             Valor == incerto,
+             Incerto == nss,
+             involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
+             remover((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+                  utente(I,Nss,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd))).
+
+% -> Profissão
+
+registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
+             Valor == incerto,
+             Incerto == profissao,
+             evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
+             inserir((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+                  utente(I,Ns,Nm,Dt,Em,Tl,Mr,Prof,Dcr,Csd))).
+
+removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
+             Valor == incerto,
+             Incerto == profissao,
+             involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
+             remover((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+                  utente(I,Ns,Nm,Dt,Em,Tl,Mr,Prof,Dcr,Csd))).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Registar Centro de Saúde
+% REGISTAR/REMOVER CENTRO DE SAÚDE
 
 registaCentro(Id,Nome,Mor,Tel,Email) :-
              evolucao(centro_saude(Id,Nome,Mor,Tel,Email)).
+
+removeCentro(Id,Nome,Mor,Tel,Email) :-
+             involucao(centro_saude(Id,Nome,Mor,Tel,Email)).
+
+% Pelo tipo (positivo ou negativo)
+
 registaCentro(Type,Id,Nome,Mor,Tel,Email) :-
              evolucao(centro_saude(Id,Nome,Mor,Tel,Email),Type).
 
+removeCentro(Type,Id,Nome,Mor,Tel,Email) :-
+             involucao(centro_saude(Id,Nome,Mor,Tel,Email),Type).
+
+% Com conhecimento imperfeito incerto
+% -> Morada
+
+registaCentro(Id,Nome,Mor,Tel,Email,Valor,Incerto) :-
+             Valor == incerto,
+             Incerto == morada,
+             evolucao(centro_saude(Id,Nome,Mor,Tel,Email)),
+             inserir((excecao(centro_saude(I,N,M,T,E)) :-
+                    centro_saude(I,N,Mor,T,E))).
+
+removeCentro(Id,Nome,Mor,Tel,Email,Valor,Incerto) :-
+              Valor == incerto,
+              Incerto == morada,
+              involucao(centro_saude(Id,Nome,Mor,Tel,Email)),
+              remover((excecao(centro_saude(I,N,M,T,E)) :-
+                    centro_saude(I,N,Mor,T,E))).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Registar Staff
+% REGISTAR/REMOVER STAFF
 
 registaStaff(Id,Idcentro,Nome,Email) :-
             evolucao(staff(Id,Idcentro,Nome,Email)).
 
+removeStaff(Id,Idcentro,Nome,Email) :-
+            involucao(staff(Id,Idcentro,Nome,Email)).
+
+% Pelo tipo (positivo ou negativo)
+
+registaStaff(Type,Id,Idcentro,Nome,Email) :-
+             evolucao(staff(Id,Idcentro,Nome,Email),Type).
+
+removeStaff(Type,Id,Idcentro,Nome,Email) :-
+             involucao(staff(Id,Idcentro,Nome,Email),Type).
+
+% Com conhecimento imperfeito incerto
+% -> Nome
+
+registaStaff(Id,Idcentro,Nome,Email,Valor,Incerto) :-
+             Valor == incerto,
+             Incerto == nome,
+             evolucao(staff(Id,Idcentro,Nome,Email)),
+             inserir((excecao(staff(I,Ic,N,E)) :-
+               staff(I,Ic,Nome,E))).
+
+removeStaff(Id,Idcentro,Nome,Email,Valor,Incerto) :-
+            Valor == incerto,
+            Incerto == nome,
+            involucao(staff(Id,Idcentro,Nome,Email)),
+            remover((excecao(staff(I,Ic,N,E)) :-
+              staff(I,Ic,Nome,E))).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Registar Vacinação
+% REGOSTAR/REMOVER VACINAÇÃO
 
 registaVacinacao(Idstaff,Idutente,Data,Vac,T) :-
                 evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,T)).
+
+removeVacinacao(Idstaff,Idutente,Data,Vac,T) :-
+                involucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,T)).
+
+% Pelo tipo (positivo ou negativo)
+
+registaVacinacao(Type,Idstaff,Idutente,Data,Vac,T) :-
+                evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,T),Type).
+
+removeVacinacao(Type,Idstaff,Idutente,Data,Vac,T) :-
+                involucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,T),Type).
+
+% Com conhecimento imperfeito incerto
+% -> Data
+
+registaVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Incerto) :-
+                Valor == incerto,
+                Incerto == data,
+                evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
+                inserir((excecao(vacinacao_Covid(Ids,Idu,D,V,T)) :-
+                  vacinacao_Covid(Ids,Idu,Data,V,T))).
+
+removeVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Incerto) :-
+                Valor == incerto,
+                Incerto == data,
+                involucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
+                remover((excecao(vacinacao_Covid(Ids,Idu,D,V,T)) :-
+                  vacinacao_Covid(Ids,Idu,Data,V,T))).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 1) Definição de fases:
@@ -548,12 +701,12 @@ evolucao(Termo) :- solucoes(Invariante,+Termo::Invariante,Lista),
 
 evolucao(Termo, Type) :- Type == positivo,
                          solucoes(Invariante,+Termo::Invariante,Lista),
-                         inserir(Termo), 
+                         inserir(Termo),
                          teste(Lista).
 
 evolucao(Termo, Type) :- Type == negativo,
                          solucoes(Invariante, +(-Termo)::Invariante, Lista),
-                         inserir(-Termo), 
+                         inserir(-Termo),
                          teste(Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -567,12 +720,12 @@ involucao( Termo ) :- solucoes(Invariante,-Termo::Invariante,Lista),
 
 involucao(Termo, Type) :- Type == positivo,
                          solucoes(Invariante,-Termo::Invariante,Lista),
-                         remover(Termo), 
+                         remover(Termo),
                          teste(Lista).
 
 involucao(Termo, Type) :- Type == negativo,
                          solucoes(Invariante, -(-Termo)::Invariante, Lista),
-                         remover(-Termo), 
+                         remover(-Termo),
                          teste(Lista).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -

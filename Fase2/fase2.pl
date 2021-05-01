@@ -76,6 +76,31 @@ centro_saude(3,'Centro de saúde de Barcelos','Barcelos',253004239,'csb@gmail.co
 -centro_saude(Id,N,M,Tel,E) :- nao(centro_saude(Id,N,M,Tel,E)),
                                nao(excecao(centro_saude(Id,N,M,Tel,E))).
 
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Inserção de conhecimento negativo para o predicado centro_saude
+-centro_saude(6,'Centro de saúde de Famalicão','Famalicão',253990139,'csf@gmail.com').
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito incerto para o predicado centro_saude
+
+
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito impreciso para o predicado centro_saude
+
+
+
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito interdito para o predicado centro_saude
+
+
+
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado staff: Idstaff, Idcentro, Nome, email -> {V,F}
 
@@ -90,6 +115,28 @@ staff(5,2,'Marta Domingues','md@gmail.com').
 
 -staff(Ids,Idc,N,E) :- nao(staff(Ids,Idc,N,E)),
                        nao(excecao(staff(Ids,Idc,N,E))).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Inserção de conhecimento negativo para o predicado staff
+-staff(8,3,'Joana Santos','js@gmail.com').
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito incerto para o predicado staff
+
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito impreciso para o predicado staff
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito interdito para o predicado staff
+
+
+
+
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado vacinação_Covid:  Staff, Utente, Data, Vacina, Toma -> {V,F}
 
@@ -102,6 +149,27 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
 
 -vacinacao_Covid(S,U,D,V,T) :- nao(vacinacao_Covid(S,U,D,V,T)),
                                nao(excecao(vacinacao_Covid(S,U,D,V,T))).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Inserção de conhecimento negativo para o predicado vacinacao_Covid
+-vacinacao_Covid(3,3,(01,05,2021),'Pfizer',1).
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito incerto para o predicado vacinacao_Covid
+
+
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito impreciso para o predicado vacinacao_Covid
+
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Conhecimento imperfeito interdito para o predicado vacinacao_Covid
+
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Invariantes estruturais: nao permitir a insercao de conhecimento

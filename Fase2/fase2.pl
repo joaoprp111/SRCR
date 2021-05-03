@@ -9,8 +9,8 @@
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % PROLOG: Declaracoes iniciais
 
-:- set_prolog_flag( discontiguous_warnings,off ).
-:- set_prolog_flag( single_var_warnings,off ).
+:- style_check(-discontiguous).
+:- style_check(-singleton).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Definicoes iniciais
@@ -55,13 +55,13 @@ utente(5,436329091,'Rita Neves',(21,01,2001),'rn@gmail.com',253010123,'Viana do 
 % Conhecimento imperfeito incerto para o predicado utente
 
 utente(9,nss_incerto,'Cláudio Coelho',(09,03,2000),'cc@gmail.com',253444343,'Braga','Motorista',[],2).
-utente(10,225656292,'Fábio Freitas',(12,06,1998),'ff@gmail.com',253111222,'Taipas',profissao_incerto,['Hipertensão'],3).
+utente(10,225656292,'Fábio Freitas',(12,06,1998),'ff@gmail.com',253111222,'Taipas',profissao_incerta,['Hipertensão'],3).
 
 excecao(utente(Id,_,N,D,E,Tel,M,P,Dc,Cs)) :-
     utente(Id,nss_incerto,N,D,E,Tel,M,P,Dc,Cs).
 
 excecao(utente(Id,Nss,N,D,E,Tel,M,_,Dc,Cs)) :-
-    utente(Id,Nss,N,D,E,Tel,M,profissao_incerto,Dc,Cs).
+    utente(Id,Nss,N,D,E,Tel,M,profissao_incerta,Dc,Cs).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
@@ -416,14 +416,14 @@ removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
 
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
              Valor == impreciso,
-             Incerto == telefone,
+             Impreciso == telefone,
              inserir((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
                   Telefone >= Inicio,
                   Telefone =< Fim)).
 
 removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
              Valor == impreciso,
-             Incerto == telefone,
+             Impreciso == telefone,
              remover((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
                   Telefone >= Inicio,
                   Telefone =< Fim)).
@@ -432,14 +432,14 @@ removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fi
 
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
              Valor == impreciso,
-             Incerto == centro,
+             Impreciso == centro,
              inserir((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
                   Cs >= Inicio,
                   Cs =< Fim)).
 
 removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
              Valor == impreciso,
-             Incerto == centro,
+             Impreciso == centro,
              remover((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
                   Cs >= Inicio,
                   Cs =< Fim)).
@@ -449,7 +449,7 @@ removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fi
 
 registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Interdito) :-
              Valor == interdito,
-             Incerto == morada,
+             Interdito == morada,
              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
              inserir((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
                   utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs))),
@@ -457,7 +457,7 @@ registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Interdito) :-
 
 removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Interdito) :-
              Valor == interdito,
-             Incerto == morada,
+             Interdito == morada,
              involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
              remover((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
                   utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs))),
@@ -640,14 +640,14 @@ removeVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Incerto) :-
 
 registaVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Interdito) :-
                 Valor == interdito,
-                Incerto == staff,
+                Interdito == staff,
                 evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
                 inserir((excecao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)) :-
                   vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma))).
 
 removeVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Interdito) :-
                 Valor == interdito,
-                Incerto == staff,
+                Interdito == staff,
                 involucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
                 remover((excecao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)) :-
                   vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma))).

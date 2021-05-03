@@ -22,7 +22,21 @@
 :- dynamic staff/4.
 :- dynamic vacinacao_Covid/5.
 :- dynamic excecao/1.
-
+:- discontiguous utente/10.
+:- discontiguous excecao/1.
+:- discontiguous (-)/1.
+:- discontiguous centro_saude/5.
+:- discontiguous nulo/1.
+:- discontiguous staff/4.
+:- discontiguous vacinacao_Covid/5.
+:- discontiguous registaUtente/12.
+:- discontiguous removeUtente/12.
+:- discontiguous registaUtente/14.
+:- discontiguous removeUtente/14.
+:- discontiguous registaCentro/7.
+:- discontiguous removeCentro/7.
+:- discontiguous registaVacinacao/7.
+:- discontiguous removeVacinacao/7.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado utente: Idutente, Nº Segurança_Social,
@@ -50,10 +64,10 @@ utente(5,436329091,'Rita Neves',(21,01,2001),'rn@gmail.com',253010123,'Viana do 
 utente(9,nss_incerto,'Cláudio Coelho',(09,03,2000),'cc@gmail.com',253444343,'Braga','Motorista',[],2).
 utente(10,225656292,'Fábio Freitas',(12,06,1998),'ff@gmail.com',253111222,'Taipas',profissao_incerto,['Hipertensão'],3).
 
-excecao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs)) :-
+excecao(utente(Id,_,N,D,E,Tel,M,P,Dc,Cs)) :-
     utente(Id,nss_incerto,N,D,E,Tel,M,P,Dc,Cs).
 
-excecao(utente(Id,Nss,N,D,E,Tel,M,P,Dc,Cs)) :-
+excecao(utente(Id,Nss,N,D,E,Tel,M,_,Dc,Cs)) :-
     utente(Id,Nss,N,D,E,Tel,M,profissao_incerto,Dc,Cs).
 
 
@@ -70,7 +84,7 @@ excecao(utente(12,112989582,'Carlos Faria',(24,05,1994),'cf@gmail.com',253887454
 % Conhecimento imperfeito interdito para o predicado utente
 
 utente( 13,447565666,'Ismael Lopes',(04,11,1998),'il@gmail.com',253997815,morada_interdito,'Economista',[],1 ).
-excecao( utente( Id,Nss,N,D,E,Tel,M,P,Dc,Cs ) ) :-
+excecao( utente( Id,Nss,N,D,E,Tel,_,P,Dc,Cs ) ) :-
     utente( Id,Nss,N,D,E,Tel,morada_interdito,P,Dc,Cs ).
 
 
@@ -101,7 +115,7 @@ centro_saude(3,'Centro de saúde de Barcelos','Barcelos',253004239,'csb@gmail.co
 
 centro_saude(7,'Centro de saúde da PVZ',morada_incerto,253994854,'cspvz@gmail.com').
 
-excecao(centro_saude(Id,N,M,Tel,E)) :-
+excecao(centro_saude(Id,N,_,Tel,E)) :-
     centro_saude(Id,N,morada_incerto,Tel,E).
 
 
@@ -116,7 +130,7 @@ excecao(centro_saude(8,'Centro de saúde de Beja','Beja',Impreciso,'csbeja@gmail
 % Conhecimento imperfeito interdito para o predicado centro_saude
 
 centro_saude(9,'Centro de saúde do Porto','Porto',253747252,email_interdito).
-excecao( centro_saude(Id,N,M,Tel,E) ) :-
+excecao( centro_saude(Id,N,M,Tel,_) ) :-
     centro_saude(Id,N,M,Tel,email_interdito).
 
 
@@ -148,7 +162,7 @@ staff(5,2,'Marta Domingues','md@gmail.com').
 
 staff(9,1,nome_incerto,'jr@gmail.com').
 
-excecao(staff(Ids,Idc,N,E)) :-
+excecao(staff(Ids,Idc,_,E)) :-
     staff(Ids,Idc,nome_incerto,E).
 
 
@@ -164,7 +178,7 @@ excecao(staff(10,Impreciso,'Clara Matias','cm@gmail.com')) :-
 % Conhecimento imperfeito interdito para o predicado staff
 
 staff(11,3,'Jorge Jerónimo',email_interdito).
-excecao( staff(Ids,Idc,N,E) ) :-
+excecao( staff(Ids,Idc,N,_) ) :-
     staff(Ids,Idc,N,email_interdito).
 
 nulo( email_interdito ).
@@ -192,7 +206,7 @@ vacinacao_Covid(2,5,(01,04,2021),'Pfizer',1).
 
 vacinacao_Covid(4,1,data_incerto,'Pfizer',1).
 
-excecao(vacinacao_Covid(S,U,D,V,T)) :-
+excecao(vacinacao_Covid(S,U,_,V,T)) :-
     vacinacao_Covid(S,U,data_incerto,V,T).
 
 
@@ -207,7 +221,7 @@ excecao(vacinacao_Covid(2,4,(25,04,2021),'Astrazeneca',Impreciso)) :-
 % Conhecimento imperfeito interdito para o predicado vacinacao_Covid
 
 vacinacao_Covid(staff_interdito,6,(01,05,2021),'Astrazeneca',1).
-excecao( vacinacao_Covid(S,U,D,V,T) ) :-
+excecao( vacinacao_Covid(_,U,D,V,T) ) :-
     vacinacao_Covid(staff_interdito,U,D,V,T).
 
 nulo( staff_interdito ).
@@ -218,14 +232,14 @@ nulo( staff_interdito ).
 %                          repetido nem inváilido, nem a remoção de conhecimento inexistente
 
 % Utente - Id (Inserção)
-+utente(Id,_,_,_,_,_,_,_,_,_) :: 
++utente(Id,_,_,_,_,_,_,_,_,_) ::
        (solucoes(Id,
        (utente(Id,_,_,_,_,_,_,_,_,_)),S),
        comprimento(S,N),
        N == 1).
 
 % Utente - Id (Remoção)
--utente(Id,_,_,_,_,_,_,_,_,_) :: 
+-utente(Id,_,_,_,_,_,_,_,_,_) ::
        (solucoes(Id,
        (utente(Id,_,_,_,_,_,_,_,_,_)),S),
        comprimento(S,N),
@@ -378,14 +392,14 @@ registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
              Valor == incerto,
              Incerto == nss,
              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
-             inserir((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+             inserir((excecao(utente(I,_,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
                   utente(I,Nss,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd))).
 
 removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
              Valor == incerto,
              Incerto == nss,
              involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
-             remover((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+             remover((excecao(utente(I,_,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
                   utente(I,Nss,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd))).
 
 % -> Profissão
@@ -394,14 +408,14 @@ registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
              Valor == incerto,
              Incerto == profissao,
              evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
-             inserir((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+             inserir((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,_,Dcr,Csd)) :-
                   utente(I,Ns,Nm,Dt,Em,Tl,Mr,Prof,Dcr,Csd))).
 
 removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
              Valor == incerto,
              Incerto == profissao,
              involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
-             remover((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
+             remover((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,_,Dcr,Csd)) :-
                   utente(I,Ns,Nm,Dt,Em,Tl,Mr,Prof,Dcr,Csd))).
 
 % Com conhecimento imperfeito impreciso
@@ -480,14 +494,14 @@ registaCentro(Id,Nome,Mor,Tel,Email,Valor,Incerto) :-
              Valor == incerto,
              Incerto == morada,
              evolucao(centro_saude(Id,Nome,Mor,Tel,Email)),
-             inserir((excecao(centro_saude(I,N,M,T,E)) :-
+             inserir((excecao(centro_saude(I,N,_,T,E)) :-
                     centro_saude(I,N,Mor,T,E))).
 
 removeCentro(Id,Nome,Mor,Tel,Email,Valor,Incerto) :-
               Valor == incerto,
               Incerto == morada,
               involucao(centro_saude(Id,Nome,Mor,Tel,Email)),
-              remover((excecao(centro_saude(I,N,M,T,E)) :-
+              remover((excecao(centro_saude(I,N,_,T,E)) :-
                     centro_saude(I,N,Mor,T,E))).
 
 % Com conhecimento imperfeito impreciso
@@ -549,14 +563,14 @@ registaStaff(Id,Idcentro,Nome,Email,Valor,Incerto) :-
              Valor == incerto,
              Incerto == nome,
              evolucao(staff(Id,Idcentro,Nome,Email)),
-             inserir((excecao(staff(I,Ic,N,E)) :-
+             inserir((excecao(staff(I,Ic,_,E)) :-
                staff(I,Ic,Nome,E))).
 
 removeStaff(Id,Idcentro,Nome,Email,Valor,Incerto) :-
             Valor == incerto,
             Incerto == nome,
             involucao(staff(Id,Idcentro,Nome,Email)),
-            remover((excecao(staff(I,Ic,N,E)) :-
+            remover((excecao(staff(I,Ic,_,E)) :-
               staff(I,Ic,Nome,E))).
 
 % Com conhecimento imperfeito impreciso
@@ -618,14 +632,14 @@ registaVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Incerto) :-
                 Valor == incerto,
                 Incerto == data,
                 evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
-                inserir((excecao(vacinacao_Covid(Ids,Idu,D,V,T)) :-
+                inserir((excecao(vacinacao_Covid(Ids,Idu,_,V,T)) :-
                   vacinacao_Covid(Ids,Idu,Data,V,T))).
 
 removeVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Incerto) :-
                 Valor == incerto,
                 Incerto == data,
                 involucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
-                remover((excecao(vacinacao_Covid(Ids,Idu,D,V,T)) :-
+                remover((excecao(vacinacao_Covid(Ids,Idu,_,V,T)) :-
                   vacinacao_Covid(Ids,Idu,Data,V,T))).
 
 % Com conhecimento imperfeito interdito

@@ -29,14 +29,7 @@
 :- discontiguous nulo/1.
 :- discontiguous staff/4.
 :- discontiguous vacinacao_Covid/5.
-:- discontiguous registaUtente/12.
-:- discontiguous removeUtente/12.
-:- discontiguous registaUtente/14.
-:- discontiguous removeUtente/14.
-:- discontiguous registaCentro/7.
-:- discontiguous removeCentro/7.
-:- discontiguous registaVacinacao/7.
-:- discontiguous removeVacinacao/7.
+
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do predicado utente: Idutente, Nº Segurança_Social,
@@ -598,7 +591,7 @@ registaStaff(Id,Idcentro,Nome,Email,Valor,Interdito) :-
              Interdito == email,
              evolucao(staff(Id,Idcentro,Nome,Email)),
              inserir((excecao(staff(Id,Idcentro,Nome,Email)) :-
-               staff(Id,Idcentro,Nome,Email)))
+               staff(Id,Idcentro,Nome,Email))),
              inserir(nulo(Email)).
 
 removeStaff(Id,Idcentro,Nome,Email,Valor,Interdito) :-
@@ -606,7 +599,7 @@ removeStaff(Id,Idcentro,Nome,Email,Valor,Interdito) :-
              Interdito == email,
              involucao(staff(Id,Idcentro,Nome,Email)),
              remover((excecao(staff(Id,Idcentro,Nome,Email)) :-
-               staff(Id,Idcentro,Nome,Email)))
+               staff(Id,Idcentro,Nome,Email))),
              remover(nulo(Email)).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % REGOSTAR/REMOVER VACINAÇÃO

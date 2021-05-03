@@ -22,13 +22,7 @@
 :- dynamic staff/4.
 :- dynamic vacinacao_Covid/5.
 :- dynamic excecao/1.
-:- discontiguous utente/10.
-:- discontiguous excecao/1.
-:- discontiguous (-)/1.
-:- discontiguous centro_saude/5.
-:- discontiguous nulo/1.
-:- discontiguous staff/4.
-:- discontiguous vacinacao_Covid/5.
+
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -

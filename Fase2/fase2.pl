@@ -215,57 +215,78 @@ nulo( staff_interdito ).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Invariantes estruturais: nao permitir a insercao de conhecimento
-%                          repetido nem inváilido
+%                          repetido nem inváilido, nem a remoção de conhecimento inexistente
 
-% Utente - Id
-+utente(Id,_,_,_,_,_,_,_,_,_) ::
+% Utente - Id (Inserção)
++utente(Id,_,_,_,_,_,_,_,_,_) :: 
        (solucoes(Id,
-        (utente(Id,_,_,_,_,_,_,_,_,_)),S),
-        comprimento(S,N),
-        N == 1).
+       (utente(Id,_,_,_,_,_,_,_,_,_)),S),
+       comprimento(S,N),
+       N == 1).
 
-% Utente - Nº Segurança Social
+% Utente - Id (Remoção)
+-utente(Id,_,_,_,_,_,_,_,_,_) :: 
+       (solucoes(Id,
+       (utente(Id,_,_,_,_,_,_,_,_,_)),S),
+       comprimento(S,N),
+       N == 1).
+
+% Utente - Nº Segurança Social (Inserção)
 +utente(_,Nss,_,_,_,_,_,_,_,_) ::
        (solucoes(Nss,
        (utente(_,Nss,_,_,_,_,_,_,_,_)),S),
        comprimento(S,N),
        N == 1).
 
-% Centro de Saúde - Id
+% Centro de Saúde - Id (Inserção)
 +centro_saude(IdCS,_,_,_,_) ::
        (solucoes(IdCS,
        (centro_saude(IdCS,_,_,_,_)),S),
        comprimento(S,N),
        N == 1).
 
-% Centro de Saúde - Telefone
+% Centro de Saúde - Id (Remoção)
+-centro_saude(IdCS,_,_,_,_) ::
+       (solucoes(IdCS,
+       (centro_saude(IdCS,_,_,_,_)),S),
+       comprimento(S,N),
+       N == 1).
+
+% Centro de Saúde - Telefone (Inserção)
 +centro_saude(_,_,_,Tel,_) ::
        (solucoes(Tel,
        (centro_saude(_,_,_,Tel,_)),S),
        comprimento(S,N),
        N == 1).
 
-% Centro de Saúde - Email
+% Centro de Saúde - Email (Inserção)
 +centro_saude(_,_,_,_,Email) ::
        (solucoes(Email,
        (centro_saude(_,_,_,_,Email)),S),
        comprimento(S,N),
        N == 1).
 
-% Staff - Id
+% Staff - Id (Inserção)
 +staff(Id,_,_,_) ::
       (solucoes(Id,
       staff(Id,_,_,_),S),
       comprimento(S,N),
       N == 1).
 
-% Staff - Email
+% Staff - Id (Remoção)
+-staff(Id,_,_,_) ::
+      (solucoes(Id,
+      staff(Id,_,_,_),S),
+      comprimento(S,N),
+      N == 1).
+
+% Staff - Email (Inserção)
 +staff(_,_,_,Email) ::
       (solucoes(Email,staff(_,_,_,Email),S),
       comprimento(S,N),
       N == 1).
 
-% Vacinação - Toma válida
+% Vacinação - Toma válida (Inserção)
 +vacinacao_Covid(_,_,_,_,T) ::
       (T >=1,T =< 2).
 
@@ -383,6 +404,58 @@ removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Incerto) :-
              remover((excecao(utente(I,Ns,Nm,Dt,Em,Tl,Mr,Pf,Dcr,Csd)) :-
                   utente(I,Ns,Nm,Dt,Em,Tl,Mr,Prof,Dcr,Csd))).
 
+% Com conhecimento imperfeito impreciso
+% -> Telefone
+
+registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Incerto == telefone,
+             inserir((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
+                  Telefone >= Inicio,
+                  Telefone =< Fim)).
+
+removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Incerto == telefone,
+             remover((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
+                  Telefone >= Inicio,
+                  Telefone =< Fim)).
+
+% -> Centro de Saúde
+
+registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Incerto == centro,
+             inserir((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
+                  Cs >= Inicio,
+                  Cs =< Fim)).
+
+removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Incerto == centro,
+             remover((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
+                  Cs >= Inicio,
+                  Cs =< Fim)).
+
+% Com conhecimento imperfeito interdito
+% -> Morada
+
+registaUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Interdito) :-
+             Valor == interdito,
+             Incerto == morada,
+             evolucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
+             inserir((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
+                  utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs))),
+             inserir(nulo(Mor)).
+
+removeUtente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs,Valor,Interdito) :-
+             Valor == interdito,
+             Incerto == morada,
+             involucao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)),
+             remover((excecao(utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs)) :-
+                  utente(Id,Nss,Nome,Data,Email,Tel,Mor,Prof,Dc,Cs))),
+             remover(nulo(Mor)).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % REGISTAR/REMOVER CENTRO DE SAÚDE
 
@@ -417,6 +490,41 @@ removeCentro(Id,Nome,Mor,Tel,Email,Valor,Incerto) :-
               remover((excecao(centro_saude(I,N,M,T,E)) :-
                     centro_saude(I,N,Mor,T,E))).
 
+% Com conhecimento imperfeito impreciso
+% -> Telefone
+
+registaCentro(Id,Nome,Mor,Tel,Email,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Impreciso == telefone,
+             inserir((excecao(centro_saude(Id,Nome,Mor,Tel,Email)) :-
+                    Tel >= Inicio,
+                    Tel =< Fim)).
+
+removeCentro(Id,Nome,Mor,Tel,Email,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Impreciso == telefone,
+             remover((excecao(centro_saude(Id,Nome,Mor,Tel,Email)) :-
+                    Tel >= Inicio,
+                    Tel =< Fim)).
+
+% Com conhecimento imperfeito interdito
+% -> Email
+
+registaCentro(Id,Nome,Mor,Tel,Email,Valor,Interdito) :-
+             Valor == interdito,
+             Interdito == email,
+             evolucao(centro_saude(Id,Nome,Mor,Tel,Email)),
+             inserir((excecao(centro_saude(Id,Nome,Mor,Tel,Email)) :-
+                    centro_saude(Id,Nome,Mor,Tel,Email))),
+             inserir(nulo(Email)).
+
+removeCentro(Id,Nome,Mor,Tel,Email,Valor,Interdito) :-
+             Valor == interdito,
+             Interdito == email,
+             involucao(centro_saude(Id,Nome,Mor,Tel,Email)),
+             remover((excecao(centro_saude(Id,Nome,Mor,Tel,Email)) :-
+                    centro_saude(Id,Nome,Mor,Tel,Email))),
+             remover(nulo(Email)).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % REGISTAR/REMOVER STAFF
 
@@ -451,6 +559,41 @@ removeStaff(Id,Idcentro,Nome,Email,Valor,Incerto) :-
             remover((excecao(staff(I,Ic,N,E)) :-
               staff(I,Ic,Nome,E))).
 
+% Com conhecimento imperfeito impreciso
+% -> Centro de saúde
+
+registaCentro(Id,Idcentro,Nome,Email,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Impreciso == centro,
+             inserir((excecao(staff(Id,Idcentro,Nome,Email)) :-
+                    Idcentro >= Inicio,
+                    Idcentro =< Fim)).
+
+removeCentro(Id,Idcentro,Nome,Email,Valor,Impreciso,Inicio,Fim) :-
+             Valor == impreciso,
+             Impreciso == centro,
+             remover((excecao(staff(Id,Idcentro,Nome,Email)) :-
+                    Idcentro >= Inicio,
+                    Idcentro =< Fim)).
+
+% Com conhecimento imperfeito interdito
+% -> Email
+
+registaStaff(Id,Idcentro,Nome,Email,Valor,Interdito) :-
+             Valor == interdito,
+             Interdito == email,
+             evolucao(staff(Id,Idcentro,Nome,Email)),
+             inserir((excecao(staff(Id,Idcentro,Nome,Email)) :-
+               staff(Id,Idcentro,Nome,Email)))
+             inserir(nulo(Email)).
+
+removeStaff(Id,Idcentro,Nome,Email,Valor,Interdito) :-
+             Valor == interdito,
+             Interdito == email,
+             involucao(staff(Id,Idcentro,Nome,Email)),
+             remover((excecao(staff(Id,Idcentro,Nome,Email)) :-
+               staff(Id,Idcentro,Nome,Email)))
+             remover(nulo(Email)).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % REGOSTAR/REMOVER VACINAÇÃO
 
@@ -485,6 +628,22 @@ removeVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Incerto) :-
                 remover((excecao(vacinacao_Covid(Ids,Idu,D,V,T)) :-
                   vacinacao_Covid(Ids,Idu,Data,V,T))).
 
+% Com conhecimento imperfeito interdito
+% -> Staff
+
+registaVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Interdito) :-
+                Valor == interdito,
+                Incerto == staff,
+                evolucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
+                inserir((excecao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)) :-
+                  vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma))).
+
+removeVacinacao(Idstaff,Idutente,Data,Vac,Toma,Valor,Interdito) :-
+                Valor == interdito,
+                Incerto == staff,
+                involucao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)),
+                remover((excecao(vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma)) :-
+                  vacinacao_Covid(Idstaff,Idutente,Data,Vac,Toma))).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % 1) Definição de fases:
 % Fase1 -> medicos, enfermeiros e pessoas >80 com doenças crónicas
